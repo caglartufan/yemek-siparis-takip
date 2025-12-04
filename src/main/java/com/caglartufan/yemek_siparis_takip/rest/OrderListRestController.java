@@ -7,6 +7,7 @@ import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.D
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.ListOrderListsResponse;
 import com.caglartufan.yemek_siparis_takip.service.OrderListService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +17,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/order-lists")
+@RequiredArgsConstructor
 public class OrderListRestController {
     private final OrderListService orderListService;
-
-    public OrderListRestController(OrderListService orderListService) {
-        this.orderListService = orderListService;
-    }
 
     @GetMapping
     public ResponseEntity<@NonNull ListOrderListsResponse> list(

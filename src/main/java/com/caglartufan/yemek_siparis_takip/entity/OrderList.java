@@ -45,4 +45,10 @@ public class OrderList {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "orderList", orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    public void addOrder(Order order) {
+        this.getOrders().add(order);
+        this.totalPrice = this.totalPrice.add(order.getTotalPrice());
+        order.setOrderList(this);
+    }
 }

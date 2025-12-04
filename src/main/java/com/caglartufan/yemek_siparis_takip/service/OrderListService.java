@@ -4,48 +4,42 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.entity.OrderList;
 import com.caglartufan.yemek_siparis_takip.entity.Vendor;
-import com.caglartufan.yemek_siparis_takip.exception.OrderListNotFoundException;
-import com.caglartufan.yemek_siparis_takip.exception.VendorNotFoundException;
 import com.caglartufan.yemek_siparis_takip.mapper.OrderListMapper;
 import com.caglartufan.yemek_siparis_takip.repository.OrderListRepository;
 import com.caglartufan.yemek_siparis_takip.repository.VendorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.caglartufan.yemek_siparis_takip.util.OrderListUtil;
+import com.caglartufan.yemek_siparis_takip.util.VendorUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderListService implements IOrderListService {
     private final OrderListRepository orderListRepository;
     private final VendorRepository vendorRepository;
     private final OrderListMapper orderListMapper;
 
-    @Autowired
-    public OrderListService(OrderListRepository orderListRepository, VendorRepository vendorRepository, OrderListMapper orderListMapper) {
-        this.orderListRepository = orderListRepository;
-        this.vendorRepository = vendorRepository;
-        this.orderListMapper = orderListMapper;
-    }
-
     public List<OrderListDTO> list() {
-        return orderListRepository.findAll().stream().map(orderListMapper::toOrderListDTO).toList();
+        return orderListMapper.toOrderListDTO(orderListRepository.findAll());
     }
 
     public List<OrderListDTO> listByVendor(Integer vendorId) {
-        return orderListRepository.findByVendorId(vendorId).stream().map(orderListMapper::toOrderListDTO).toList();
+        return orderListMapper.toOrderListDTO(orderListRepository.findByVendorId(vendorId));
     }
 
     @Transactional
     public OrderListDTO create(OrderListCreateDTO dto) {
         // Find the vendor or fail
-        Vendor vendor = vendorRepository
-                .findById(dto.getVendorId())
-                .orElseThrow(() -> new VendorNotFoundException(dto.getVendorId()));
+        Vendor vendor = VendorUtil.findVendorOrElseThrow(dto.getVendorId(), vendorRepository);
 
         // Create an order list
         OrderList orderList = new OrderList();
         orderList.setName(dto.getName());
+
+        // Link vendor and order list
         vendor.addOrderList(orderList);
 
         // Save the order list
@@ -57,10 +51,7 @@ public class OrderListService implements IOrderListService {
 
     @Transactional
     public OrderListDTO delete(Integer id) {
-        // Find the order list or fail
-        OrderList orderList = orderListRepository
-                .findById(id)
-                .orElseThrow(() -> new OrderListNotFoundException(id));
+        OrderList orderList = OrderListUtil.findOrderListOrElseThrow(id, orderListRepository);
 
         // Delete the order list
         orderListRepository.deleteById(id);

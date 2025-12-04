@@ -1,27 +1,24 @@
 package com.caglartufan.yemek_siparis_takip.rest;
 
 import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.CreateOrderResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.ListOrdersResponse;
 import com.caglartufan.yemek_siparis_takip.service.OrderService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/order-lists")
+@RequiredArgsConstructor
 public class OrderRestController {
-    private OrderService orderService;
-
-    @Autowired
-    public OrderRestController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    private final OrderService orderService;
 
     @GetMapping("/{orderListId}/orders")
     public ResponseEntity<@NonNull ListOrdersResponse> list(
@@ -31,5 +28,17 @@ public class OrderRestController {
         ListOrdersResponse res = new ListOrdersResponse(orders);
 
         return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/{orderListId}/orders")
+    public ResponseEntity<@NonNull CreateOrderResponse> create(
+            @PathVariable Integer orderListId,
+            @Valid @RequestBody OrderCreateDTO dto
+    ) {
+        OrderDTO orderDTO = orderService.create(orderListId, dto);
+        URI location = URI.create("/api/order-lists/" + orderListId + "/orders/" + orderDTO.getId());
+        CreateOrderResponse res = new CreateOrderResponse(orderDTO);
+
+        return ResponseEntity.created(location).body(res);
     }
 }

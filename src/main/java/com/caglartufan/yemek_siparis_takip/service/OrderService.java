@@ -5,9 +5,7 @@ import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.entity.Order;
 import com.caglartufan.yemek_siparis_takip.entity.OrderList;
 import com.caglartufan.yemek_siparis_takip.mapper.OrderMapper;
-import com.caglartufan.yemek_siparis_takip.repository.OrderListRepository;
 import com.caglartufan.yemek_siparis_takip.repository.OrderRepository;
-import com.caglartufan.yemek_siparis_takip.util.OrderListUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,19 +15,21 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class OrderService implements IOrderService {
+    private final OrderListService orderListService;
     private final OrderRepository orderRepository;
-    private final OrderListRepository orderListRepository;
     private final OrderMapper orderMapper;
 
+    @Override
     public List<OrderDTO> list(Integer orderListId) {
-        OrderListUtil.findOrderListOrElseThrow(orderListId, orderListRepository);
+        orderListService.findOrderListOrElseThrow(orderListId);
 
         return orderMapper.toOrderDTOList(orderRepository.findByOrderListId(orderListId));
     }
 
+    @Override
     @Transactional
     public OrderDTO create(Integer orderListId, OrderCreateDTO dto) {
-        OrderList orderList = OrderListUtil.findOrderListOrElseThrow(orderListId, orderListRepository);
+        OrderList orderList = orderListService.findOrderListOrElseThrow(orderListId);
 
         // Create order
         Order order = new Order();

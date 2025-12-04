@@ -4,11 +4,9 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.entity.OrderList;
 import com.caglartufan.yemek_siparis_takip.entity.Vendor;
+import com.caglartufan.yemek_siparis_takip.exception.OrderListNotFoundException;
 import com.caglartufan.yemek_siparis_takip.mapper.OrderListMapper;
 import com.caglartufan.yemek_siparis_takip.repository.OrderListRepository;
-import com.caglartufan.yemek_siparis_takip.repository.VendorRepository;
-import com.caglartufan.yemek_siparis_takip.util.OrderListUtil;
-import com.caglartufan.yemek_siparis_takip.util.VendorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,22 +16,33 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class OrderListService implements IOrderListService {
+    private final IVendorService vendorService;
     private final OrderListRepository orderListRepository;
-    private final VendorRepository vendorRepository;
     private final OrderListMapper orderListMapper;
 
+    @Override
+    public OrderList findOrderListOrElseThrow(Integer id) {
+        // Find the order list or fail
+        return orderListRepository
+                .findById(id)
+                .orElseThrow(() -> new OrderListNotFoundException(id));
+    }
+
+    @Override
     public List<OrderListDTO> list() {
         return orderListMapper.toOrderListDTO(orderListRepository.findAll());
     }
 
+    @Override
     public List<OrderListDTO> listByVendor(Integer vendorId) {
         return orderListMapper.toOrderListDTO(orderListRepository.findByVendorId(vendorId));
     }
 
+    @Override
     @Transactional
     public OrderListDTO create(OrderListCreateDTO dto) {
         // Find the vendor or fail
-        Vendor vendor = VendorUtil.findVendorOrElseThrow(dto.getVendorId(), vendorRepository);
+        Vendor vendor = vendorService.findVendorOrElseThrow(dto.getVendorId());
 
         // Create an order list
         OrderList orderList = new OrderList();
@@ -49,9 +58,10 @@ public class OrderListService implements IOrderListService {
         return orderListMapper.toOrderListDTO(savedOrderList);
     }
 
+    @Override
     @Transactional
     public OrderListDTO delete(Integer id) {
-        OrderList orderList = OrderListUtil.findOrderListOrElseThrow(id, orderListRepository);
+        OrderList orderList = findOrderListOrElseThrow(id);
 
         // Delete the order list
         orderListRepository.deleteById(id);

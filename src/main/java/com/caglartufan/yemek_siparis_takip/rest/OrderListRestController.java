@@ -5,7 +5,7 @@ import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.CreateOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.DeleteOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.ListOrderListsResponse;
-import com.caglartufan.yemek_siparis_takip.service.OrderListService;
+import com.caglartufan.yemek_siparis_takip.service.IOrderListService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/order-lists")
 @RequiredArgsConstructor
 public class OrderListRestController {
-    private final OrderListService orderListService;
+    private final IOrderListService orderListService;
 
     @GetMapping
     public ResponseEntity<@NonNull ListOrderListsResponse> list(

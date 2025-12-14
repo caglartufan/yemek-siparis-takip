@@ -13,6 +13,8 @@ public interface IOrderListService {
 
     List<OrderListDTO> listByVendor(Integer vendorId);
 
+    OrderListDTO findById(Integer id);
+
     OrderListDTO create(OrderListCreateDTO dto);
 
     OrderListDTO delete(Integer id);

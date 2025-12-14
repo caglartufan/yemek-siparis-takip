@@ -1,8 +1,11 @@
 package com.caglartufan.yemek_siparis_takip.rest;
 
 import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.CreateOrderResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.DeleteOrdersResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.GetOrderResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.ListOrdersResponse;
 import com.caglartufan.yemek_siparis_takip.service.IOrderService;
 import jakarta.validation.Valid;
@@ -30,6 +33,14 @@ public class OrderRestController {
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/{orderListId}/orders/{id}")
+    public ResponseEntity<@NonNull GetOrderResponse> get(@PathVariable Integer orderListId, @PathVariable Integer id) {
+        OrderDTO orderDTO = orderService.findById(orderListId, id);
+        GetOrderResponse res = new GetOrderResponse(orderDTO);
+
+        return ResponseEntity.ok(res);
+    }
+
     @PostMapping("/{orderListId}/orders")
     public ResponseEntity<@NonNull CreateOrderResponse> create(
             @PathVariable Integer orderListId,
@@ -40,5 +51,13 @@ public class OrderRestController {
         CreateOrderResponse res = new CreateOrderResponse(orderDTO);
 
         return ResponseEntity.created(location).body(res);
+    }
+
+    @DeleteMapping("/{orderListId}/orders")
+    public ResponseEntity<@NonNull DeleteOrdersResponse> deleteWithIds(@PathVariable Integer orderListId, @Valid @RequestBody DeleteOrdersDTO dto) {
+        List<OrderDTO> removedOrders = orderService.deleteWithIds(orderListId, dto.getOrderIds());
+        DeleteOrdersResponse res = new DeleteOrdersResponse(removedOrders);
+
+        return ResponseEntity.ok(res);
     }
 }

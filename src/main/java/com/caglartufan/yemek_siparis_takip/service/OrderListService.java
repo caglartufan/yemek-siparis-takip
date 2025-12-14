@@ -39,6 +39,12 @@ public class OrderListService implements IOrderListService {
     }
 
     @Override
+    public OrderListDTO findById(Integer id) {
+        OrderList orderList = findOrderListOrElseThrow(id);
+        return orderListMapper.toOrderListDTOWithOrders(orderList);
+    }
+
+    @Override
     @Transactional
     public OrderListDTO create(OrderListCreateDTO dto) {
         // Find the vendor or fail

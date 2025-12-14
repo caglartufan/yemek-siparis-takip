@@ -4,6 +4,7 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.entity.Order;
 import com.caglartufan.yemek_siparis_takip.entity.OrderList;
+import com.caglartufan.yemek_siparis_takip.exception.OrderNotFoundException;
 import com.caglartufan.yemek_siparis_takip.mapper.OrderMapper;
 import com.caglartufan.yemek_siparis_takip.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,20 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public OrderDTO findById(Integer orderListId, Integer id) {
+        OrderList orderList = orderListService.findOrderListOrElseThrow(orderListId);
+
+        Order order = orderList
+                .getOrders()
+                .stream()
+                .filter(orderEl -> orderEl.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        return orderMapper.toOrderDTO(order);
+    }
+
+    @Override
     @Transactional
     public OrderDTO create(Integer orderListId, OrderCreateDTO dto) {
         OrderList orderList = orderListService.findOrderListOrElseThrow(orderListId);
@@ -43,5 +58,15 @@ public class OrderService implements IOrderService {
 
         // Return DTO of created order
         return orderMapper.toOrderDTO(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public List<OrderDTO> deleteWithIds(Integer orderListId, List<Integer> ids) {
+        OrderList orderList = orderListService.findOrderListOrElseThrow(orderListId);
+
+        List<Order> removedOrders = orderList.removeOrdersWithIds(ids);
+
+        return orderMapper.toOrderDTOList(removedOrders);
     }
 }

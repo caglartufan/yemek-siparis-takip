@@ -8,5 +8,9 @@ import java.util.List;
 public interface IOrderService {
     List<OrderDTO> list(Integer orderListId);
 
+    OrderDTO findById(Integer orderListId, Integer id);
+
     OrderDTO create(Integer orderListId, OrderCreateDTO dto);
+
+    List<OrderDTO> deleteWithIds(Integer orderListId, List<Integer> ids);
 }

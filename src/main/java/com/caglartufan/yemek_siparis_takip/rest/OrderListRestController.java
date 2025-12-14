@@ -4,6 +4,7 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.CreateOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.DeleteOrderListResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.GetOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.ListOrderListsResponse;
 import com.caglartufan.yemek_siparis_takip.service.IOrderListService;
 import jakarta.validation.Valid;
@@ -35,6 +36,14 @@ public class OrderListRestController {
 
         ListOrderListsResponse res = new ListOrderListsResponse(orderListDTOs);
 
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<@NonNull GetOrderListResponse> get(@PathVariable Integer id) {
+        OrderListDTO orderListDTO = orderListService.findById(id);
+        GetOrderListResponse res = new GetOrderListResponse(orderListDTO);
+        
         return ResponseEntity.ok(res);
     }
 

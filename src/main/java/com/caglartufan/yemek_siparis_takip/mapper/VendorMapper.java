@@ -5,7 +5,7 @@ import com.caglartufan.yemek_siparis_takip.entity.Vendor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface VendorMapper {
     @Mapping(target = "orderLists", ignore = true)
     @Mapping(target = "products", ignore = true)

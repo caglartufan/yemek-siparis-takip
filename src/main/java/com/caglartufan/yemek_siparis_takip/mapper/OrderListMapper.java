@@ -9,7 +9,7 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {OrderMapper.class})
+@Mapper(uses = {OrderMapper.class})
 public interface OrderListMapper {
     @Named("toOrderListDTO")
     @Mapping(target = "vendor.products", ignore = true)

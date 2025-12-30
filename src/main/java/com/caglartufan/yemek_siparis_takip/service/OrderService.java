@@ -28,6 +28,13 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public Order findOrderOrElseThrow(Integer id) {
+        return orderRepository
+                .findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+    }
+
+    @Override
     public OrderDTO findById(Integer orderListId, Integer id) {
         OrderList orderList = orderListService.findOrderListOrElseThrow(orderListId);
 

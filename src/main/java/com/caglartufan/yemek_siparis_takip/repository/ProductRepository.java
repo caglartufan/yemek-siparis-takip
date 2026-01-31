@@ -5,6 +5,9 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepository extends JpaRepository<@NonNull Product, @NonNull Integer> {
+    Optional<Product> findByIdAndVendorId(Integer productId, Integer vendorId);
 }

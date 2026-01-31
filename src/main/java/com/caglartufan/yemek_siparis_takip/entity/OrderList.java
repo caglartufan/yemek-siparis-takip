@@ -22,7 +22,7 @@ public class OrderList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -47,29 +47,39 @@ public class OrderList {
     private List<Order> orders = new ArrayList<>();
 
     public void addOrder(Order order) {
-        if (order == null) return;
+        if (Objects.isNull(order)) return;
 
-        this.getOrders().add(order);
-        this.totalPrice = this.totalPrice.add(order.getTotalPrice());
+        // Add the order and build relationship
+        orders.add(order);
         order.setOrderList(this);
+
+        // Update total price
+        applyDelta(order.getTotalPrice());
     }
 
     public List<Order> removeOrders(List<Order> orders) {
         List<Order> removedOrders = new ArrayList<>();
 
-        if (orders == null || orders.isEmpty()) return removedOrders;
+        if (Objects.isNull(orders) || orders.isEmpty()) return removedOrders;
 
+        // Define a BigDecimal to store amount to subtract from the totalPrice (must be negative or zero)
         AtomicReference<BigDecimal> totalToSubtract = new AtomicReference<>(BigDecimal.ZERO);
 
         orders.forEach(order -> {
-            if (order == null || !this.orders.remove(order)) return;
+            // If order is null or could not be removed (maybe it didn't exist), do nothing
+            if (Objects.isNull(order) || !this.orders.remove(order)) return;
 
-            totalToSubtract.set(totalToSubtract.get().add(order.getTotalPrice()));
+            // Subtract order's totalPrice from current subtraction amount
+            totalToSubtract.set(totalToSubtract.get().subtract(order.getTotalPrice()));
+
+            // Break the relationship
             order.setOrderList(null);
+
+            // Add the order to the removedOrders
             removedOrders.add(order);
         });
 
-        this.totalPrice = this.totalPrice.subtract(totalToSubtract.get());
+        applyDelta(totalToSubtract.get());
 
         return removedOrders;
     }
@@ -77,7 +87,7 @@ public class OrderList {
     public List<Order> removeOrdersWithIds(List<Integer> orderIds) {
         List<Order> removedOrders = new ArrayList<>();
 
-        if (orderIds == null || orderIds.isEmpty()) return removedOrders;
+        if (Objects.isNull(orderIds) || orderIds.isEmpty()) return removedOrders;
 
         BigDecimal totalToSubtract = BigDecimal.ZERO;
         Set<Integer> orderIdsSet = new HashSet<>(orderIds);
@@ -86,16 +96,83 @@ public class OrderList {
         while (iterator.hasNext()) {
             Order order = iterator.next();
 
+            // If order is not supposed to be removed, continue
             if (!orderIdsSet.contains(order.getId())) continue;
 
+            // Remove the order and break the relationship
             iterator.remove();
-            totalToSubtract = totalToSubtract.add(order.getTotalPrice());
             order.setOrderList(null);
+
+            // Subtract order's totalPrice from current subtraction amount
+            totalToSubtract = totalToSubtract.subtract(order.getTotalPrice());
+
+            // Add the order to the removedOrders
             removedOrders.add(order);
         }
 
-        this.totalPrice = this.totalPrice.subtract(totalToSubtract);
+        applyDelta(totalToSubtract);
 
         return removedOrders;
+    }
+
+    public void addOrderItem(Integer orderId, OrderItem orderItem) {
+        if (Objects.isNull(orderId) || Objects.isNull(orderItem)) return;
+
+        Order order = findOrder(orderId);
+
+        if (Objects.isNull(order)) return;
+
+        BigDecimal delta = order.addOrderItem(orderItem);
+
+        applyDelta(delta);
+    }
+
+    public void changeOrderItemQuantity(Integer orderId, Integer orderItemId, Integer quantity) {
+        if (Objects.isNull(orderId) || Objects.isNull(orderItemId) || Objects.isNull(quantity)) return;
+
+        Order order = findOrder(orderId);
+
+        if (Objects.isNull(order)) return;
+
+        BigDecimal delta = order.changeOrderItemQuantity(orderItemId, quantity);
+
+        applyDelta(delta);
+    }
+
+    public void changeOrderItemPortion(Integer orderId, Integer orderItemId, BigDecimal portion) {
+        if (Objects.isNull(orderId) || Objects.isNull(orderItemId) || Objects.isNull(portion)) return;
+
+        Order order = findOrder(orderId);
+
+        if (Objects.isNull(order)) return;
+
+        BigDecimal delta = order.changeOrderItemPortion(orderItemId, portion);
+
+        applyDelta(delta);
+    }
+
+    public void changeOrderItemProduct(Integer orderId, Integer orderItemId, Product product) {
+        if (Objects.isNull(orderId) || Objects.isNull(orderItemId) || Objects.isNull(product)) return;
+
+        Order order = findOrder(orderId);
+
+        if (Objects.isNull(order)) return;
+
+        BigDecimal delta = order.changeOrderItemProduct(orderItemId, product);
+
+        applyDelta(delta);
+    }
+
+    public void applyDelta(BigDecimal delta) {
+        totalPrice = totalPrice.add(delta);
+    }
+
+    private Order findOrder(Integer orderId) {
+        if (Objects.isNull(orderId)) return null;
+
+        return orders.stream()
+                .filter(order -> order.getId().equals(orderId))
+                .findAny()
+                .orElse(null);
     }
 }

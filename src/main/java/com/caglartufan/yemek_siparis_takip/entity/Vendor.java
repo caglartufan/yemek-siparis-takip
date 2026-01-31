@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "vendors")
@@ -19,7 +20,7 @@ public class Vendor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -37,6 +38,8 @@ public class Vendor {
     private List<OrderList> orderLists = new ArrayList<>();
 
     public void addOrderList(OrderList orderList) {
+        if (Objects.isNull(orderList)) return;
+
         orderLists.add(orderList);
         orderList.setVendor(this);
     }

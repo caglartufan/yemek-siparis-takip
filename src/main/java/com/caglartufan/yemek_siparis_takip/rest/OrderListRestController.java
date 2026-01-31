@@ -1,7 +1,19 @@
 package com.caglartufan.yemek_siparis_takip.rest;
 
+import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
+import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.OrderItemCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.CreateOrderResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.DeleteOrdersResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.GetOrderResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.ListOrdersResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.CreateOrderItemResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.GetOrderItemResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.ListOrderItemsResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.CreateOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.DeleteOrderListResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.GetOrderListResponse;
@@ -22,8 +34,12 @@ import java.util.List;
 public class OrderListRestController {
     private final IOrderListService orderListService;
 
+    /**
+     * ORDER LIST ENDPOINTS
+     */
+
     @GetMapping
-    public ResponseEntity<@NonNull ListOrderListsResponse> list(
+    public ResponseEntity<@NonNull ListOrderListsResponse> listOrderLists(
             @RequestParam(required = false, name = "vendor_id") Integer vendorId
     ) {
         List<OrderListDTO> orderListDTOs;
@@ -39,16 +55,16 @@ public class OrderListRestController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<@NonNull GetOrderListResponse> get(@PathVariable Integer id) {
-        OrderListDTO orderListDTO = orderListService.findById(id);
+    @GetMapping("/{orderListId}")
+    public ResponseEntity<@NonNull GetOrderListResponse> getOrderList(@PathVariable Integer orderListId) {
+        OrderListDTO orderListDTO = orderListService.findById(orderListId);
         GetOrderListResponse res = new GetOrderListResponse(orderListDTO);
-        
+
         return ResponseEntity.ok(res);
     }
 
     @PostMapping
-    public ResponseEntity<@NonNull CreateOrderListResponse> create(@Valid @RequestBody OrderListCreateDTO dto) {
+    public ResponseEntity<@NonNull CreateOrderListResponse> createOrderList(@Valid @RequestBody OrderListCreateDTO dto) {
         OrderListDTO orderListDTO = orderListService.create(dto);
         URI location = URI.create("/api/order-lists/" + orderListDTO.getId());
         CreateOrderListResponse res = new CreateOrderListResponse(orderListDTO);
@@ -57,12 +73,90 @@ public class OrderListRestController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<@NonNull DeleteOrderListResponse> delete(
+    public ResponseEntity<@NonNull DeleteOrderListResponse> deleteOrderList(
             @PathVariable Integer id
     ) {
         OrderListDTO orderList = orderListService.delete(id);
         DeleteOrderListResponse res = new DeleteOrderListResponse(orderList);
 
         return ResponseEntity.ok(res);
+    }
+
+    /**
+     * ORDER ENDPOINTS
+     */
+
+    @GetMapping("/{orderListId}/orders")
+    public ResponseEntity<@NonNull ListOrdersResponse> listOrders(
+            @PathVariable Integer orderListId
+    ) {
+        List<OrderDTO> orders = orderListService.listOrders(orderListId);
+        ListOrdersResponse res = new ListOrdersResponse(orders);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/{orderListId}/orders/{id}")
+    public ResponseEntity<@NonNull GetOrderResponse> getOrder(@PathVariable Integer orderListId,
+                                                              @PathVariable Integer id) {
+        OrderDTO orderDTO = orderListService.findOrderById(orderListId, id);
+        GetOrderResponse res = new GetOrderResponse(orderDTO);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/{orderListId}/orders")
+    public ResponseEntity<@NonNull CreateOrderResponse> createOrder(
+            @PathVariable Integer orderListId,
+            @Valid @RequestBody OrderCreateDTO orderCreateDTO
+    ) {
+        OrderDTO orderDTO = orderListService.createOrder(orderListId, orderCreateDTO);
+        URI location = URI.create("/api/order-lists/%d/orders/%d".formatted(orderListId, orderDTO.getId()));
+        CreateOrderResponse res = new CreateOrderResponse(orderDTO);
+
+        return ResponseEntity.created(location).body(res);
+    }
+
+    @DeleteMapping("/{orderListId}/orders")
+    public ResponseEntity<@NonNull DeleteOrdersResponse> deleteOrdersWithIds(@PathVariable Integer orderListId,
+                                                                             @Valid @RequestBody DeleteOrdersDTO deleteOrdersDTO) {
+        List<OrderDTO> deletedOrders = orderListService.deleteOrdersWithIds(orderListId, deleteOrdersDTO);
+        DeleteOrdersResponse res = new DeleteOrdersResponse(deletedOrders);
+
+        return ResponseEntity.ok(res);
+    }
+
+    /**
+     * ORDER ITEM ENDPOINTS
+     */
+
+    @GetMapping("/{orderListId}/orders/{orderId}/order-items")
+    public ResponseEntity<ListOrderItemsResponse> listOrderItems(@PathVariable Integer orderListId,
+                                                                 @PathVariable Integer orderId) {
+        List<OrderItemDTO> orderItems = orderListService.listOrderItems(orderListId, orderId);
+        ListOrderItemsResponse res = new ListOrderItemsResponse(orderItems);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/{orderListId}/orders/{orderId}/order-items/{orderItemId}")
+    public ResponseEntity<GetOrderItemResponse> getOrderItem(@PathVariable Integer orderListId,
+                                                             @PathVariable Integer orderId,
+                                                             @PathVariable Integer orderItemId) {
+        OrderItemDTO orderItem = orderListService.findOrderItemById(orderListId, orderId, orderItemId);
+        GetOrderItemResponse res = new GetOrderItemResponse(orderItem);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/{orderListId}/orders/{orderId}/order-items")
+    public ResponseEntity<CreateOrderItemResponse> create(@PathVariable Integer orderListId,
+                                                          @PathVariable Integer orderId,
+                                                          @Valid @RequestBody OrderItemCreateDTO orderItemCreateDTO) {
+        OrderItemDTO orderItemDTO = orderListService.createOrderItem(orderListId, orderId, orderItemCreateDTO);
+        CreateOrderItemResponse res = new CreateOrderItemResponse(orderItemDTO);
+        URI location = URI.create("/api/order-lists/%d/orders/%d/order-items/%d".formatted(orderListId, orderId, 1));
+
+        return ResponseEntity.created(location).body(res);
     }
 }

@@ -1,12 +1,22 @@
 package com.caglartufan.yemek_siparis_takip.service;
 
+import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
+import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.OrderItemCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
-import com.caglartufan.yemek_siparis_takip.entity.OrderList;
-import com.caglartufan.yemek_siparis_takip.entity.Vendor;
+import com.caglartufan.yemek_siparis_takip.entity.*;
+import com.caglartufan.yemek_siparis_takip.exception.OrderItemNotFoundException;
 import com.caglartufan.yemek_siparis_takip.exception.OrderListNotFoundException;
+import com.caglartufan.yemek_siparis_takip.exception.OrderNotFoundException;
+import com.caglartufan.yemek_siparis_takip.mapper.OrderItemMapper;
 import com.caglartufan.yemek_siparis_takip.mapper.OrderListMapper;
+import com.caglartufan.yemek_siparis_takip.mapper.OrderMapper;
+import com.caglartufan.yemek_siparis_takip.repository.OrderItemRepository;
 import com.caglartufan.yemek_siparis_takip.repository.OrderListRepository;
+import com.caglartufan.yemek_siparis_takip.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +27,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderListService implements IOrderListService {
     private final IVendorService vendorService;
+    private final IProductService productService;
     private final OrderListRepository orderListRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final OrderListMapper orderListMapper;
+    private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
 
+    /**
+     * ORDER LIST RELATED METHODS
+     */
     @Override
     public OrderList findOrderListOrElseThrow(Integer id) {
         // Find the order list or fail
@@ -74,5 +92,111 @@ public class OrderListService implements IOrderListService {
 
         // Return DTO of the deleted order list
         return orderListMapper.toOrderListDTO(orderList);
+    }
+
+    /**
+     * ORDER RELATED METHODS
+     */
+    @Override
+    public Order findOrderOrElseThrow(Integer orderListId, Integer orderId) {
+        return orderRepository
+                .findOrderOfOrderList(orderListId, orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
+    @Override
+    public List<OrderDTO> listOrders(Integer orderListId) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
+
+        return orderMapper.toOrderDTOList(orderList.getOrders());
+    }
+
+    @Override
+    public OrderDTO findOrderById(Integer orderListId, Integer orderId) {
+        findOrderListOrElseThrow(orderListId);
+
+        Order order = findOrderOrElseThrow(orderListId, orderId);
+
+        return orderMapper.toOrderDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO createOrder(Integer orderListId, OrderCreateDTO orderCreateDTO) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
+
+        // Create order
+        Order order = new Order();
+        order.setOrderedBy(orderCreateDTO.getOrderedBy());
+
+        // Add order to orderList
+        orderList.addOrder(order);
+
+        // Save order and retrieve saved order
+        Order savedOrder = orderRepository.save(order);
+
+        return orderMapper.toOrderDTO(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public List<OrderDTO> deleteOrdersWithIds(Integer orderListId, DeleteOrdersDTO deleteOrdersDTO) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
+
+        // Remove orders with given ids
+        List<Order> deletedOrders = orderList.removeOrdersWithIds(deleteOrdersDTO.getOrderIds());
+
+        return orderMapper.toOrderDTOList(deletedOrders);
+    }
+
+    /**
+     * ORDER ITEM RELATED METHODS
+     */
+    @Override
+    public OrderItem findOrderItemOrElseThrow(Integer orderListId, Integer orderId, Integer orderItemId) {
+        return orderItemRepository
+                .findOrderItemOfOrderOfOrderList(orderListId, orderId, orderItemId)
+                .orElseThrow(() -> new OrderItemNotFoundException(orderItemId));
+    }
+
+    @Override
+    public List<OrderItemDTO> listOrderItems(Integer orderListId, Integer orderId) {
+        List<OrderItem> orderItems = orderItemRepository
+                .findOrderItemsOfOrderOfOrderList(orderListId, orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        return orderItemMapper.toOrderItemListDTO(orderItems);
+    }
+
+    @Override
+    public OrderItemDTO findOrderItemById(Integer orderListId, Integer orderId, Integer orderItemId) {
+        OrderItem orderItem = findOrderItemOrElseThrow(orderListId, orderId, orderItemId);
+
+        return orderItemMapper.toOrderItemDTO(orderItem);
+    }
+
+    @Override
+    @Transactional
+    public OrderItemDTO createOrderItem(Integer orderListId, Integer orderId, OrderItemCreateDTO orderItemCreateDTO) {
+        Order order = findOrderOrElseThrow(orderListId, orderId);
+        OrderList orderList = order.getOrderList();
+        Product product = productService
+                .findProductOrElseThrow(orderList.getVendor().getId(), orderItemCreateDTO.getProductId());
+
+        // Create orderItem
+        OrderItem orderItem = OrderItem.createOrderItem(
+                order,
+                orderItemCreateDTO.getQuantity(),
+                orderItemCreateDTO.getPortion(),
+                product
+        );
+
+        // Add created orderItem through orderList
+        orderList.addOrderItem(orderId, orderItem);
+
+        // Save orderItem
+        OrderItem savedOrderItem = orderItemRepository.save(orderItem);
+
+        return orderItemMapper.toOrderItemDTO(savedOrderItem);
     }
 }

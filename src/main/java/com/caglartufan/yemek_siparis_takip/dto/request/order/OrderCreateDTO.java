@@ -1,4 +1,4 @@
-package com.caglartufan.yemek_siparis_takip.dto.request;
+package com.caglartufan.yemek_siparis_takip.dto.request.order;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

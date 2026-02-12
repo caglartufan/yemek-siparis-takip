@@ -1,4 +1,4 @@
-package com.caglartufan.yemek_siparis_takip.dto.request;
+package com.caglartufan.yemek_siparis_takip.dto.request.order_list;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

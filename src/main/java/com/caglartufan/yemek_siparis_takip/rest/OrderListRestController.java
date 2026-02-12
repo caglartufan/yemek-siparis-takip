@@ -3,21 +3,19 @@ package com.caglartufan.yemek_siparis_takip.rest;
 import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderItemCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.CreateOrderResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.DeleteOrdersResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.GetOrderResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.ListOrdersResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.CreateOrderItemResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.GetOrderItemResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_items.ListOrderItemsResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.CreateOrderListResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.DeleteOrderListResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.GetOrderListResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.ListOrderListsResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.CreateOrderItemResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.GetOrderItemResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.ListOrderItemsResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.*;
 import com.caglartufan.yemek_siparis_takip.service.IOrderListService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -64,19 +62,28 @@ public class OrderListRestController {
     }
 
     @PostMapping
-    public ResponseEntity<@NonNull CreateOrderListResponse> createOrderList(@Valid @RequestBody OrderListCreateDTO dto) {
-        OrderListDTO orderListDTO = orderListService.create(dto);
+    public ResponseEntity<@NonNull CreateOrderListResponse> createOrderList(@Valid @RequestBody OrderListCreateDTO orderListCreateDTO) {
+        OrderListDTO orderListDTO = orderListService.create(orderListCreateDTO);
         URI location = URI.create("/api/order-lists/" + orderListDTO.getId());
         CreateOrderListResponse res = new CreateOrderListResponse(orderListDTO);
 
         return ResponseEntity.created(location).body(res);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{orderListId}")
+    public ResponseEntity<@NonNull PatchOrderListResponse> patchOrderList(@PathVariable Integer orderListId,
+                                                                          @Valid @RequestBody OrderListPatchDTO orderListPatchDTO) {
+        OrderListDTO patchedOrderList = orderListService.patch(orderListId, orderListPatchDTO);
+        PatchOrderListResponse res = new PatchOrderListResponse(patchedOrderList);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @DeleteMapping("/{orderListId}")
     public ResponseEntity<@NonNull DeleteOrderListResponse> deleteOrderList(
-            @PathVariable Integer id
+            @PathVariable Integer orderListId
     ) {
-        OrderListDTO orderList = orderListService.delete(id);
+        OrderListDTO orderList = orderListService.delete(orderListId);
         DeleteOrderListResponse res = new DeleteOrderListResponse(orderList);
 
         return ResponseEntity.ok(res);
@@ -96,10 +103,10 @@ public class OrderListRestController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/{orderListId}/orders/{id}")
+    @GetMapping("/{orderListId}/orders/{orderId}")
     public ResponseEntity<@NonNull GetOrderResponse> getOrder(@PathVariable Integer orderListId,
-                                                              @PathVariable Integer id) {
-        OrderDTO orderDTO = orderListService.findOrderById(orderListId, id);
+                                                              @PathVariable Integer orderId) {
+        OrderDTO orderDTO = orderListService.findOrderById(orderListId, orderId);
         GetOrderResponse res = new GetOrderResponse(orderDTO);
 
         return ResponseEntity.ok(res);

@@ -3,10 +3,11 @@ package com.caglartufan.yemek_siparis_takip.service;
 import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderItemCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.entity.Order;
 import com.caglartufan.yemek_siparis_takip.entity.OrderItem;
 import com.caglartufan.yemek_siparis_takip.entity.OrderList;
@@ -17,17 +18,19 @@ public interface IOrderListService {
     /**
      * ORDER LIST RELATED METHODS
      */
-    OrderList findOrderListOrElseThrow(Integer id);
+    OrderList findOrderListOrElseThrow(Integer orderListId);
 
     List<OrderListDTO> list();
 
     List<OrderListDTO> listByVendor(Integer vendorId);
 
-    OrderListDTO findById(Integer id);
+    OrderListDTO findById(Integer orderListId);
 
-    OrderListDTO create(OrderListCreateDTO dto);
+    OrderListDTO create(OrderListCreateDTO orderListCreateDTO);
 
-    OrderListDTO delete(Integer id);
+    OrderListDTO patch(Integer orderListId, OrderListPatchDTO orderListPatchDTO);
+
+    OrderListDTO delete(Integer orderListId);
 
     /**
      * ORDER RELATED METHODS

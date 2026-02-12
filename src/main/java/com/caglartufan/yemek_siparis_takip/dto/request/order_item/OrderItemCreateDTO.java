@@ -1,4 +1,4 @@
-package com.caglartufan.yemek_siparis_takip.dto.request;
+package com.caglartufan.yemek_siparis_takip.dto.request.order_item;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

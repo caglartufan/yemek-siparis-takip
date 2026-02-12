@@ -3,10 +3,11 @@ package com.caglartufan.yemek_siparis_takip.service;
 import com.caglartufan.yemek_siparis_takip.dto.OrderDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.DeleteOrdersDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderItemCreateDTO;
-import com.caglartufan.yemek_siparis_takip.dto.request.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.entity.*;
 import com.caglartufan.yemek_siparis_takip.exception.OrderItemNotFoundException;
 import com.caglartufan.yemek_siparis_takip.exception.OrderListNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +41,11 @@ public class OrderListService implements IOrderListService {
      * ORDER LIST RELATED METHODS
      */
     @Override
-    public OrderList findOrderListOrElseThrow(Integer id) {
+    public OrderList findOrderListOrElseThrow(Integer orderListId) {
         // Find the order list or fail
         return orderListRepository
-                .findById(id)
-                .orElseThrow(() -> new OrderListNotFoundException(id));
+                .findById(orderListId)
+                .orElseThrow(() -> new OrderListNotFoundException(orderListId));
     }
 
     @Override
@@ -57,8 +59,8 @@ public class OrderListService implements IOrderListService {
     }
 
     @Override
-    public OrderListDTO findById(Integer id) {
-        OrderList orderList = findOrderListOrElseThrow(id);
+    public OrderListDTO findById(Integer orderListId) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
         return orderListMapper.toOrderListDTOWithOrders(orderList);
     }
 
@@ -82,13 +84,31 @@ public class OrderListService implements IOrderListService {
         return orderListMapper.toOrderListDTO(savedOrderList);
     }
 
+    public OrderListDTO patch(Integer orderListId, OrderListPatchDTO orderListPatchDTO) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
+        String newName = orderListPatchDTO.getName();
+        boolean hasChanged = false;
+
+        if (!Objects.isNull(newName) && !orderList.getName().equals(newName)) {
+            orderList.setName(newName);
+            hasChanged = true;
+        }
+
+        if (hasChanged) {
+            OrderList patchedOrderList = orderListRepository.save(orderList);
+            return orderListMapper.toOrderListDTO(patchedOrderList);
+        } else {
+            return orderListMapper.toOrderListDTO(orderList);
+        }
+    }
+
     @Override
     @Transactional
-    public OrderListDTO delete(Integer id) {
-        OrderList orderList = findOrderListOrElseThrow(id);
+    public OrderListDTO delete(Integer orderListId) {
+        OrderList orderList = findOrderListOrElseThrow(orderListId);
 
         // Delete the order list
-        orderListRepository.deleteById(id);
+        orderListRepository.deleteById(orderListId);
 
         // Return DTO of the deleted order list
         return orderListMapper.toOrderListDTO(orderList);

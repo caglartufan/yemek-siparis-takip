@@ -7,6 +7,7 @@ import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.entity.*;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -244,5 +246,41 @@ public class OrderListService implements IOrderListService {
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
 
         return orderItemMapper.toOrderItemDTO(savedOrderItem);
+    }
+
+    @Override
+    @Transactional
+    public OrderItemDTO patchOrderItem(Integer orderListId, Integer orderId, Integer orderItemId, OrderItemPatchDTO orderItemPatchDTO) {
+        OrderItem orderItem = findOrderItemOrElseThrow(orderListId, orderId, orderItemId);
+        OrderList orderList = orderItem.getOrder().getOrderList();
+        Integer newQuantity = orderItemPatchDTO.getQuantity();
+        BigDecimal newPortion = orderItemPatchDTO.getPortion();
+        Integer newProductId = orderItemPatchDTO.getProductId();
+        boolean hasChanged = false;
+
+        if (!Objects.isNull(newQuantity) && !orderItem.getQuantity().equals(newQuantity)) {
+            orderList.changeOrderItemQuantity(orderId, orderItemId, newQuantity);
+            hasChanged = true;
+        }
+
+        if (!Objects.isNull(newPortion) && !orderItem.getPortion().equals(newPortion)) {
+            orderList.changeOrderItemPortion(orderId, orderItemId, newPortion);
+            hasChanged = true;
+        }
+
+        if (!Objects.isNull(newProductId) && !orderItem.getProduct().getId().equals(newProductId)) {
+            Product newProduct = productService
+                    .findProductOrElseThrow(orderList.getVendor().getId(), newProductId);
+
+            orderList.changeOrderItemProduct(orderId, orderItemId, newProduct);
+            hasChanged = true;
+        }
+
+        if (hasChanged) {
+            OrderItem patchedOrderItem = orderItemRepository.save(orderItem);
+            return orderItemMapper.toOrderItemDTO(patchedOrderItem);
+        }
+
+        return orderItemMapper.toOrderItemDTO(orderItem);
     }
 }

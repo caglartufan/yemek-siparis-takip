@@ -7,12 +7,14 @@ import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.*;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.CreateOrderItemResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.GetOrderItemResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.ListOrderItemsResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.PatchOrderItemResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_list.*;
 import com.caglartufan.yemek_siparis_takip.service.IOrderListService;
 import jakarta.validation.Valid;
@@ -146,8 +148,8 @@ public class OrderListRestController {
      */
 
     @GetMapping("/{orderListId}/orders/{orderId}/order-items")
-    public ResponseEntity<ListOrderItemsResponse> listOrderItems(@PathVariable Integer orderListId,
-                                                                 @PathVariable Integer orderId) {
+    public ResponseEntity<@NonNull ListOrderItemsResponse> listOrderItems(@PathVariable Integer orderListId,
+                                                                          @PathVariable Integer orderId) {
         List<OrderItemDTO> orderItems = orderListService.listOrderItems(orderListId, orderId);
         ListOrderItemsResponse res = new ListOrderItemsResponse(orderItems);
 
@@ -155,9 +157,9 @@ public class OrderListRestController {
     }
 
     @GetMapping("/{orderListId}/orders/{orderId}/order-items/{orderItemId}")
-    public ResponseEntity<GetOrderItemResponse> getOrderItem(@PathVariable Integer orderListId,
-                                                             @PathVariable Integer orderId,
-                                                             @PathVariable Integer orderItemId) {
+    public ResponseEntity<@NonNull GetOrderItemResponse> getOrderItem(@PathVariable Integer orderListId,
+                                                                      @PathVariable Integer orderId,
+                                                                      @PathVariable Integer orderItemId) {
         OrderItemDTO orderItem = orderListService.findOrderItemById(orderListId, orderId, orderItemId);
         GetOrderItemResponse res = new GetOrderItemResponse(orderItem);
 
@@ -165,13 +167,25 @@ public class OrderListRestController {
     }
 
     @PostMapping("/{orderListId}/orders/{orderId}/order-items")
-    public ResponseEntity<CreateOrderItemResponse> create(@PathVariable Integer orderListId,
-                                                          @PathVariable Integer orderId,
-                                                          @Valid @RequestBody OrderItemCreateDTO orderItemCreateDTO) {
+    public ResponseEntity<@NonNull CreateOrderItemResponse> create(@PathVariable Integer orderListId,
+                                                                   @PathVariable Integer orderId,
+                                                                   @Valid @RequestBody OrderItemCreateDTO orderItemCreateDTO) {
         OrderItemDTO orderItemDTO = orderListService.createOrderItem(orderListId, orderId, orderItemCreateDTO);
         CreateOrderItemResponse res = new CreateOrderItemResponse(orderItemDTO);
         URI location = URI.create("/api/order-lists/%d/orders/%d/order-items/%d".formatted(orderListId, orderId, 1));
 
         return ResponseEntity.created(location).body(res);
+    }
+
+    @PatchMapping("/{orderListId}/orders/{orderId}/order-items/{orderItemId}")
+    public ResponseEntity<@NonNull PatchOrderItemResponse> patchOrderItem(@PathVariable Integer orderListId,
+                                                                          @PathVariable Integer orderId,
+                                                                          @PathVariable Integer orderItemId,
+                                                                          @Valid @RequestBody OrderItemPatchDTO orderItemPatchDTO) {
+
+        OrderItemDTO patchedOrderItem = orderListService.patchOrderItem(orderListId, orderId, orderItemId, orderItemPatchDTO);
+        PatchOrderItemResponse res = new PatchOrderItemResponse(patchedOrderItem);
+
+        return ResponseEntity.ok(res);
     }
 }

@@ -7,6 +7,7 @@ import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
 import com.caglartufan.yemek_siparis_takip.entity.Order;
@@ -58,4 +59,6 @@ public interface IOrderListService {
     OrderItemDTO findOrderItemById(Integer orderListId, Integer orderId, Integer orderItemId);
 
     OrderItemDTO createOrderItem(Integer orderListId, Integer orderId, OrderItemCreateDTO orderItemCreateDTO);
+
+    OrderItemDTO patchOrderItem(Integer orderListId, Integer orderId, Integer orderItemId, OrderItemPatchDTO orderItemPatchDTO);
 }

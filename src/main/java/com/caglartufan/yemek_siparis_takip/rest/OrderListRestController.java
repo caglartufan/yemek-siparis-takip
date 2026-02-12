@@ -5,13 +5,11 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.CreateOrderResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.DeleteOrdersResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.GetOrderResponse;
-import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.ListOrdersResponse;
+import com.caglartufan.yemek_siparis_takip.response.rest_controller.order.*;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.CreateOrderItemResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.GetOrderItemResponse;
 import com.caglartufan.yemek_siparis_takip.response.rest_controller.order_item.ListOrderItemsResponse;
@@ -122,6 +120,16 @@ public class OrderListRestController {
         CreateOrderResponse res = new CreateOrderResponse(orderDTO);
 
         return ResponseEntity.created(location).body(res);
+    }
+
+    @PatchMapping("/{orderListId}/orders/{orderId}")
+    public ResponseEntity<@NonNull PatchOrderResponse> patchOrder(@PathVariable Integer orderListId,
+                                                                  @PathVariable Integer orderId,
+                                                                  @Valid @RequestBody OrderPatchDTO orderPatchDTO) {
+        OrderDTO patchedOrder = orderListService.patchOrder(orderListId, orderId, orderPatchDTO);
+        PatchOrderResponse res = new PatchOrderResponse(patchedOrder);
+
+        return ResponseEntity.ok(res);
     }
 
     @DeleteMapping("/{orderListId}/orders")

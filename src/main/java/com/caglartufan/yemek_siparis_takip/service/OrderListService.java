@@ -5,6 +5,7 @@ import com.caglartufan.yemek_siparis_takip.dto.OrderItemDTO;
 import com.caglartufan.yemek_siparis_takip.dto.OrderListDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.DeleteOrdersDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderCreateDTO;
+import com.caglartufan.yemek_siparis_takip.dto.request.order.OrderPatchDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_item.OrderItemCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListCreateDTO;
 import com.caglartufan.yemek_siparis_takip.dto.request.order_list.OrderListPatchDTO;
@@ -84,6 +85,8 @@ public class OrderListService implements IOrderListService {
         return orderListMapper.toOrderListDTO(savedOrderList);
     }
 
+    @Override
+    @Transactional
     public OrderListDTO patch(Integer orderListId, OrderListPatchDTO orderListPatchDTO) {
         OrderList orderList = findOrderListOrElseThrow(orderListId);
         String newName = orderListPatchDTO.getName();
@@ -97,9 +100,9 @@ public class OrderListService implements IOrderListService {
         if (hasChanged) {
             OrderList patchedOrderList = orderListRepository.save(orderList);
             return orderListMapper.toOrderListDTO(patchedOrderList);
-        } else {
-            return orderListMapper.toOrderListDTO(orderList);
         }
+
+        return orderListMapper.toOrderListDTO(orderList);
     }
 
     @Override
@@ -156,6 +159,29 @@ public class OrderListService implements IOrderListService {
         Order savedOrder = orderRepository.save(order);
 
         return orderMapper.toOrderDTO(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO patchOrder(Integer orderListId, Integer orderId, OrderPatchDTO orderPatchDTO) {
+        findOrderListOrElseThrow(orderListId);
+
+        Order order = findOrderOrElseThrow(orderListId, orderId);
+        String newOrderedBy = orderPatchDTO.getOrderedBy();
+        boolean hasChanged = false;
+
+        if (!Objects.isNull(newOrderedBy) && !order.getOrderedBy().equals(newOrderedBy)) {
+            order.setOrderedBy(newOrderedBy);
+            hasChanged = true;
+        }
+
+        if (hasChanged) {
+            // Save order and retrieve patched order
+            Order patchedOrder = orderRepository.save(order);
+            return orderMapper.toOrderDTO(patchedOrder);
+        }
+
+        return orderMapper.toOrderDTO(order);
     }
 
     @Override

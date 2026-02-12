@@ -17,6 +17,7 @@ public interface OrderItemMapper {
     @Mapping(target = "product.orderItems", ignore = true)
     OrderItemDTO toOrderItemDTO(OrderItem orderItem);
 
+    @Named("toOrderItemListDTO")
     @IterableMapping(qualifiedByName = "toOrderItemDTO")
     List<OrderItemDTO> toOrderItemListDTO(List<OrderItem> orderItems);
 }

@@ -48,12 +48,12 @@ public class OrderListService implements IOrderListService {
 
     @Override
     public List<OrderListDTO> list() {
-        return orderListMapper.toOrderListDTO(orderListRepository.findAll());
+        return orderListMapper.toOrderListListDTO(orderListRepository.findAll());
     }
 
     @Override
     public List<OrderListDTO> listByVendor(Integer vendorId) {
-        return orderListMapper.toOrderListDTO(orderListRepository.findByVendorId(vendorId));
+        return orderListMapper.toOrderListListDTO(orderListRepository.findByVendorId(vendorId));
     }
 
     @Override

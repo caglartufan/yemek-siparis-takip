@@ -18,7 +18,7 @@ public interface OrderListMapper {
     OrderListDTO toOrderListDTO(OrderList orderList);
 
     @IterableMapping(qualifiedByName = "toOrderListDTO")
-    List<OrderListDTO> toOrderListDTO(List<OrderList> orderList);
+    List<OrderListDTO> toOrderListListDTO(List<OrderList> orderList);
 
     @Mapping(target = "vendor.products", ignore = true)
     @Mapping(target = "vendor.orderLists", ignore = true)

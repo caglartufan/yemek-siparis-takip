@@ -11,7 +11,7 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper
+@Mapper(uses = {OrderItemMapper.class})
 public interface OrderMapper {
     @Named("toOrderDTO")
     @Mapping(target = "orderList", ignore = true)
@@ -23,6 +23,7 @@ public interface OrderMapper {
 
     @Named("toOrderDTOWithoutOrderList")
     @Mapping(target = "orderList", ignore = true)
+    @Mapping(target = "orderItems", qualifiedByName = "toOrderItemListDTO")
     OrderDTO toOrderDTOWithoutOrderList(Order order);
 
     Order fromOrderDTO(OrderDTO orderDTO);
